@@ -1,9 +1,8 @@
 <?php 
-// 2. INICIAR SESIÓN (Debe ir antes de cualquier HTML para que el nombre de usuario se vea)
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+/**
+ * index.php - PromptMaster v0.1.5
+ * La sesión se inicia automáticamente al requerir db.php de forma segura.
+ */
 require 'db.php'; 
 ?>
 <!DOCTYPE html>
@@ -15,29 +14,34 @@ require 'db.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .card { border: none; shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 12px; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; scroll-behavior: smooth; }
+        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 12px; }
         .step-number { background: #0d6efd; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; }
-        .generated-box { background: #e9ecef; border-left: 5px solid #0d6efd; padding: 20px; font-family: 'Courier New', monospace; }
+        .generated-box { background: #e9ecef; border-left: 5px solid #0d6efd; padding: 20px; font-family: 'Courier New', monospace; white-space: pre-wrap; min-height: 100px; }
+        .prompt-card { transition: transform 0.2s; }
+        .prompt-card:hover { transform: translateY(-5px); }
+        .text-truncate-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 sticky-top shadow">
     <div class="container">
-        <a class="navbar-brand" href="#">PromptMaster v0.1.0</a>
-        <div class="d-flex align-items-center"> <?php if(isset($_SESSION['user_id'])): ?>
-        
+        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-cpu"></i> PromptMaster <span class="badge bg-primary" style="font-size: 0.6em;">v0.1.5</span></a>
+        <div class="d-flex align-items-center"> 
+            <?php if(isset($_SESSION['user_id'])): ?>
                 <span class="navbar-text text-white me-3 d-none d-sm-block">
-                    <i class="bi bi-person-circle"></i> 
-                    <?php echo htmlspecialchars($_SESSION['user_email']); ?>
+                    <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['user_email']); ?>
                 </span>
-                <a href="#myLibrary" class="text-white me-3 text-decoration-none">
+                <a href="javascript:void(0)" onclick="document.getElementById('myLibrary').scrollIntoView()" class="text-white me-3 text-decoration-none small">
                     <i class="bi bi-collection"></i> Mi Librería
                 </a>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">Cerrar Sesión</button>
+                <button class="btn btn-sm btn-outline-danger me-2" onclick="deleteAllPrompts()">
+                    <i class="bi bi-trash3"></i>
+                </button>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">Salir</button>
             <?php else: ?>
-                <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Ingresar</button>
+                <button class="btn btn-primary btn-sm me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#loginModal">Ingresar / Registrarse</button>
             <?php endif; ?>
         </div>
     </div>
@@ -48,37 +52,32 @@ require 'db.php';
         <div class="col-lg-7 mb-4">
             <div class="card p-4">
                 <h4 class="mb-4">Constructor de Prompts Didáctico</h4>
-                
                 <form id="promptForm">
                     <div class="mb-3">
                         <label class="form-label fw-bold"><span class="step-number">1</span>Dominio de Conocimiento</label>
-                        <div class="input-group">
+                        <div class="input-group shadow-sm">
                             <select class="form-select" id="domainSelect" onchange="setDomain()">
-                                <option value="">Seleccionar área sugerida...</option>
+                                <option value="">Seleccionar área...</option>
                                 <option value="Ingeniería de Software">Ingeniería de Software</option>
                                 <option value="Marketing Digital">Marketing Digital</option>
                                 <option value="Derecho y Leyes">Derecho y Leyes</option>
                                 <option value="Medicina y Salud">Medicina y Salud</option>
                                 <option value="Escritura Creativa">Escritura Creativa</option>
-                                <option value="Biología Molecular">Biología Molecular</option>
-                                <option value="Astronomía">Astronomía</option>
-                                <option value="Finanzas y Economía">Finanzas y Economía</option>
-                                <option value="Arquitectura">Arquitectura</option>
-                                <option value="Psicología">Psicología</option>
+                                <option value="Finanzas">Finanzas</option>
                             </select>
-                            <input type="text" class="form-control" id="domainInput" placeholder="O escribe un área nueva" oninput="updatePrompt()">
+                            <input type="text" class="form-control" id="domainInput" placeholder="O escribe una nueva" oninput="updatePrompt()">
                         </div>
-                        <div class="form-text">Si tu área no está en la lista, escríbela manualmente.</div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold"><span class="step-number">2</span>Rol del Asistente</label>
-                        <div class="input-group">
+                        <div class="input-group shadow-sm">
                             <select class="form-select" id="roleSelect" onchange="setRole()">
-                                <option value="">Seleccionar o escribir...</option>
+                                <option value="">Seleccionar rol...</option>
                                 <option value="Experto Senior">Experto Senior</option>
                                 <option value="Tutor Académico">Tutor Académico</option>
                                 <option value="Crítico Constructivo">Crítico Constructivo</option>
+                                <option value="Científico de Datos">Científico de Datos</option>
                             </select>
                             <input type="text" class="form-control" id="roleInput" placeholder="O escribe un rol manual" oninput="updatePrompt()">
                         </div>
@@ -86,13 +85,12 @@ require 'db.php';
 
                     <div class="mb-3">
                         <label class="form-label fw-bold"><span class="step-number">3</span>Contexto del Problema</label>
-                        <textarea class="form-control" id="context" rows="3" placeholder="Ej: Estoy desarrollando una app móvil y necesito optimizar la base de datos..." oninput="updatePrompt()"></textarea>
-                        <div class="form-text">Describe la situación actual y por qué necesitas ayuda.</div>
+                        <textarea class="form-control shadow-sm" id="context" rows="3" placeholder="Describe la situación actual..." oninput="updatePrompt()"></textarea>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Formato de Salida</label>
+                            <label class="form-label fw-bold small text-muted text-uppercase">Formato</label>
                             <select class="form-select" id="format" onchange="updatePrompt()">
                                 <option value="Texto plano">Texto plano</option>
                                 <option value="Tabla comparativa">Tabla comparativa</option>
@@ -102,7 +100,7 @@ require 'db.php';
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Tono</label>
+                            <label class="form-label fw-bold small text-muted text-uppercase">Tono</label>
                             <select class="form-select" id="tone" onchange="updatePrompt()">
                                 <option value="Profesional">Profesional</option>
                                 <option value="Académico">Académico</option>
@@ -113,17 +111,17 @@ require 'db.php';
                         </div>
                     </div>
 
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <label class="form-label fw-bold">Ingeniería de Prompts Avanzada</label>
-                        <div class="form-check">
+                    <div class="mb-3 p-3 bg-light rounded border">
+                        <label class="form-label fw-bold mb-2">Ingeniería de Prompts Avanzada</label>
+                        <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="checkCoT" onchange="updatePrompt()">
                             <label class="form-check-label">Chain of Thought (Pensamiento paso a paso)</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="checkCritic" onchange="updatePrompt()">
-                            <label class="form-check-label">Autocrítica (Revisar respuesta antes de enviar)</label>
+                            <label class="form-check-label">Autocrítica (Revisión antes de enviar)</label>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="checkStructure" onchange="updatePrompt()">
                             <label class="form-check-label">Estructura Viral (Gancho/Cuerpo/Cierre)</label>
                         </div>
@@ -133,29 +131,32 @@ require 'db.php';
         </div>
 
         <div class="col-lg-5">
-            <div class="card p-4 sticky-top" style="top: 20px;">
-                <h5 class="text-primary"><i class="bi bi-robot"></i> Resultado en Tiempo Real</h5>
+            <div class="card p-4 sticky-top" style="top: 85px;">
+                <h5 class="text-primary"><i class="bi bi-robot"></i> Vista Previa del Prompt</h5>
                 <hr>
-                <div class="generated-box mb-3" id="finalOutput">
-                    Completa el formulario para ver la magia...
-                </div>
+                <div class="generated-box mb-3 shadow-inner" id="finalOutput">Completa el formulario para ver la magia...</div>
                 
                 <div class="d-grid gap-2">
-                    <button class="btn btn-success" onclick="copyToClipboard()"><i class="bi bi-clipboard"></i> Copiar Prompt</button>
+                    <button class="btn btn-success shadow-sm" onclick="copyText()">
+                        <i class="bi bi-clipboard"></i> Copiar al Portapapeles
+                    </button>
+                    
                     <?php if(isset($_SESSION['user_id'])): ?>
                         <div class="input-group">
-                            <select class="form-select" id="rating">
+                            <select class="form-select border-primary" id="rating">
                                 <option value="5">⭐⭐⭐⭐⭐</option>
                                 <option value="4">⭐⭐⭐⭐</option>
                                 <option value="3">⭐⭐⭐</option>
-                                <option value="3">⭐⭐</option>
-                                <option value="3">⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="1">⭐</option>
                             </select>
-                            <button class="btn btn-outline-primary" onclick="savePrompt()">Guardar</button>
+                            <button class="btn btn-primary" onclick="savePrompt()">
+                                <i class="bi bi-cloud-arrow-up"></i> Guardar
+                            </button>
                         </div>
                     <?php else: ?>
-                        <div class="alert alert-warning text-center mt-2 p-2">
-                            <small>Inicia sesión para guardar tus prompts.</small>
+                        <div class="alert alert-warning text-center mt-2 p-2 small">
+                            <i class="bi bi-info-circle"></i> Inicia sesión para guardar en tu librería.
                         </div>
                     <?php endif; ?>
                 </div>
@@ -163,127 +164,111 @@ require 'db.php';
         </div>
     </div>
 
-<?php if(isset($_SESSION['user_id'])): ?>
-<hr class="my-5">
-<div class="row" id="myLibrary">
-    <div class="col-12 mb-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <h3><i class="bi bi-journal-bookmark"></i> Mi Librería de Activos</h3>
-                <p class="text-muted mb-0">Gestiona y filtra tus prompts guardados.</p>
-            </div>
-            
-            <div class="d-flex gap-2">
-                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Buscar por rol o contenido..." onkeyup="filterPrompts()">
-                <select id="domainFilter" class="form-select form-select-sm" onchange="filterPrompts()">
-                    <option value="all">Todos los dominios</option>
-                    <option value="Ingeniería de Software">Ingeniería de Software</option>
-                    <option value="Marketing Digital">Marketing Digital</option>
-                    <option value="Derecho y Leyes">Derecho y Leyes</option>
-                    <option value="Medicina y Salud">Medicina y Salud</option>
-                    <option value="Escritura Creativa">Escritura Creativa</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row" id="promptsContainer">
-        <?php
-        $stmt = $pdo->prepare("SELECT * FROM prompts WHERE user_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$_SESSION['user_id']]);
-        $mis_prompts = $stmt->fetchAll();
-
-        if ($mis_prompts):
-            foreach ($mis_prompts as $p):
-        ?>
-        <div class="col-md-4 mb-3 prompt-card" 
-             data-domain="<?php echo htmlspecialchars($p['domain']); ?>" 
-             data-content="<?php echo htmlspecialchars(strtolower($p['role'] . ' ' . $p['final_prompt'])); ?>">
-            <div class="card h-100 shadow-sm border-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge bg-primary"><?php echo htmlspecialchars($p['domain']); ?></span>
-                        <span class="text-warning"><?php echo str_repeat('⭐', $p['rating']); ?></span>
-                    </div>
-                    <h6 class="card-title fw-bold">Rol: <?php echo htmlspecialchars($p['role']); ?></h6>
-                    <p class="card-text small text-truncate-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                        <?php echo htmlspecialchars($p['final_prompt']); ?>
-                    </p>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-primary" onclick="copyText('<?php echo addslashes($p['final_prompt']); ?>')">
-                            <i class="bi bi-clipboard"></i> Copiar
-                        </button>
-                    </div>
+    <?php if(isset($_SESSION['user_id'])): ?>
+    <hr class="my-5" id="myLibrary">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h3><i class="bi bi-journal-bookmark"></i> Mi Librería de Activos</h3>
+                    <p class="text-muted mb-0">Tus prompts estratégicos guardados.</p>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Buscar..." onkeyup="filterPrompts()">
+                    <select id="domainFilter" class="form-select" onchange="filterPrompts()">
+                        <option value="all">Todos los dominios</option>
+                        <option value="Ingeniería de Software">Ingeniería de Software</option>
+                        <option value="Marketing Digital">Marketing Digital</option>
+                        <option value="Derecho y Leyes">Derecho y Leyes</option>
+                        <option value="Medicina y Salud">Medicina y Salud</option>
+                        <option value="Escritura Creativa">Escritura Creativa</option>
+                    </select>
                 </div>
             </div>
         </div>
-        <?php 
-            endforeach;
-        else:
-            echo '<div class="col-12"><div class="alert alert-light text-center">Aún no tienes prompts guardados.</div></div>';
-        endif;
-        ?>
-    </div>
-</div>
-
-<script>
-// Lógica de filtrado instantáneo
-function filterPrompts() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const domainFilter = document.getElementById('domainFilter').value;
-    const cards = document.querySelectorAll('.prompt-card');
-
-    cards.forEach(card => {
-        const content = card.getAttribute('data-content');
-        const domain = card.getAttribute('data-domain');
         
-        const matchesSearch = content.includes(searchTerm);
-        const matchesDomain = (domainFilter === 'all' || domain === domainFilter);
+        <div class="row" id="promptsContainer">
+            <?php
+            $stmt = $pdo->prepare("SELECT * FROM prompts WHERE user_id = ? ORDER BY created_at DESC");
+            $stmt->execute([$_SESSION['user_id']]);
+            $mis_prompts = $stmt->fetchAll();
 
-        if (matchesSearch && matchesDomain) {
-            card.style.display = "block";
-        } else {
-            card.style.display = "none";
-        }
-    });
-}
-
-function copyText(text) {
-    navigator.clipboard.writeText(text);
-    // Un toque de UX: Cambiar el alert por algo menos intrusivo si es posible, 
-    // pero por ahora mantenemos consistencia con tu código
-    alert('Prompt copiado con éxito.');
-}
-</script>
-<?php endif; ?>
-
+            if ($mis_prompts):
+                foreach ($mis_prompts as $p):
+            ?>
+            <div class="col-md-4 mb-3 prompt-card" 
+                 data-domain="<?php echo htmlspecialchars($p['domain']); ?>" 
+                 data-content="<?php echo htmlspecialchars(strtolower($p['role'] . ' ' . $p['final_prompt'])); ?>">
+                <div class="card h-100 shadow-sm border-top border-primary border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-light text-primary border border-primary"><?php echo htmlspecialchars($p['domain']); ?></span>
+                            <span class="small"><?php echo str_repeat('⭐', (int)$p['rating']); ?></span>
+                        </div>
+                        <h6 class="card-title fw-bold">Rol: <?php echo htmlspecialchars($p['role']); ?></h6>
+                        <p class="card-text small text-muted text-truncate-3">
+                            <?php echo htmlspecialchars($p['final_prompt']); ?>
+                        </p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary flex-grow-1" 
+                                    onclick='copyText(<?php echo json_encode($p["final_prompt"]); ?>)'>
+                                <i class="bi bi-files"></i> Copiar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deletePrompt(<?php echo $p['id']; ?>)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php 
+                endforeach;
+            else:
+                echo '<div class="col-12"><div class="alert alert-light text-center border">Aún no tienes prompts guardados. ¡Crea el primero arriba!</div></div>';
+            endif;
+            ?>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <div class="modal fade" id="loginModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Acceso Usuario</h5>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs mb-3" id="authTab" role="tablist">
-                    <li class="nav-item"><button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">Login</button></li>
-                    <li class="nav-item"><button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">Registro</button></li>
+                <ul class="nav nav-pills nav-fill mb-4" id="authTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">Ingresar</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">Crear Cuenta</button>
+                    </li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="login">
                         <form onsubmit="handleAuth(event, 'login')">
-                            <input type="email" name="email" class="form-control mb-2" placeholder="Email" required>
-                            <input type="password" name="password" class="form-control mb-2" placeholder="Password" required>
-                            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                            <div class="mb-2">
+                                <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="password" class="form-control" placeholder="Contraseña" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2">Iniciar Sesión</button>
                         </form>
                     </div>
                     <div class="tab-pane fade" id="register">
                         <form onsubmit="handleAuth(event, 'register')">
-                            <input type="email" name="email" class="form-control mb-2" placeholder="Email" required>
-                            <input type="password" name="password" class="form-control mb-2" placeholder="Password" required>
-                            <button type="submit" class="btn btn-success w-100">Registrar</button>
+                            <div class="mb-2">
+                                <input type="email" name="email" class="form-control" placeholder="Correo electrónico" required>
+                            </div>
+                            <div class="mb-2">
+                                <input type="password" name="password" class="form-control" placeholder="Contraseña (mín. 6 caracteres)" minlength="6" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 py-2">Registrarme</button>
                         </form>
                     </div>
                 </div>
@@ -294,7 +279,14 @@ function copyText(text) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Lógica Frontend
+    // --- Lógica del Generador ---
+    function setDomain() {
+        const select = document.getElementById('domainSelect');
+        const input = document.getElementById('domainInput');
+        if(select.value) input.value = select.value;
+        updatePrompt();
+    }
+
     function setRole() {
         const select = document.getElementById('roleSelect');
         const input = document.getElementById('roleInput');
@@ -302,19 +294,7 @@ function copyText(text) {
         updatePrompt();
     }
 
-    // Nueva función para sincronizar el Select con el Input de Dominio
-    function setDomain() {
-        const select = document.getElementById('domainSelect');
-        const input = document.getElementById('domainInput');
-        if(select.value) {
-            input.value = select.value;
-        }
-        updatePrompt();
-}
-
-    // Actualización de la función principal
     function updatePrompt() {
-        // Ahora tomamos el dominio del input manual (que se llena al elegir el select)
         const domain = document.getElementById('domainInput').value;
         const role = document.getElementById('roleInput').value;
         const context = document.getElementById('context').value;
@@ -323,74 +303,113 @@ function copyText(text) {
         
         let prompt = "";
 
-        // Construcción lógica del Prompt (Mejorada para ser más natural)
         if(role) prompt += `Actúa como un **${role}** `;
         if(domain) {
             prompt += (role) ? `experto en el área de **${domain}**. ` : `Eres un experto en **${domain}**. `;
         }
         if(context) prompt += `\n\n**Contexto:** ${context}`;
         
-        // Estructura Viral
         if(document.getElementById('checkStructure').checked) {
-            prompt += `\n\nPor favor sigue estrictamente la siguiente estructura:\n1. GANCHO (Frase llamativa)\n2. DESARROLLO (Contenido principal)\n3. CIERRE (Llamada a la acción)`;
+            prompt += `\n\n**Estructura:** Sigue este esquema:\n1. GANCHO (Frase inicial)\n2. CUERPO (Análisis detallado)\n3. CIERRE (Pasos a seguir)`;
         }
 
-        // Técnicas
-        if(document.getElementById('checkCoT').checked) prompt += `\n\n**Metodología:** Antes de responder, piensa paso a paso (Chain of Thought) y explica tu razonamiento.`;
-        if(document.getElementById('checkCritic').checked) prompt += `\n\n**Revisión:** Analiza tu respuesta en busca de sesgos o errores antes de mostrar la salida final.`;
+        if(document.getElementById('checkCoT').checked) prompt += `\n\n**Instrucción:** Usa Chain of Thought; piensa paso a paso antes de dar la respuesta final.`;
+        if(document.getElementById('checkCritic').checked) prompt += `\n\n**Filtro:** Realiza una autocrítica interna para eliminar errores antes de responder.`;
 
-        prompt += `\n\n**Formato de Salida:** ${format}.`;
-        prompt += `\n**Tono:** ${tone}.`;
+        prompt += `\n\n**Formato:** ${format}.\n**Tono:** ${tone}.`;
 
-        document.getElementById('finalOutput').innerText = prompt || "Completa el formulario...";
-        
-        // Persistencia Local (Guest)
-        if(!<?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>) {
-            localStorage.setItem('lastDraft', prompt);
-        }
+        document.getElementById('finalOutput').innerText = prompt || "Completa el formulario para ver la magia...";
     }
 
-    // Cargar borrador para guests
-    window.onload = function() {
-        if(localStorage.getItem('lastDraft') && !<?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>) {
-            // Lógica simple para restaurar visualización si se desea
-        }
-    };
+    // --- Lógica de Librería y Filtrado ---
+    function filterPrompts() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const domainFilter = document.getElementById('domainFilter').value;
+        const cards = document.querySelectorAll('.prompt-card');
 
-    function copyToClipboard() {
-        navigator.clipboard.writeText(document.getElementById('finalOutput').innerText);
-        alert('Prompt copiado!');
+        cards.forEach(card => {
+            const content = card.getAttribute('data-content');
+            const domain = card.getAttribute('data-domain');
+            const matchesSearch = content.includes(searchTerm);
+            const matchesDomain = (domainFilter === 'all' || domain === domainFilter);
+            card.style.display = (matchesSearch && matchesDomain) ? "block" : "none";
+        });
     }
 
+    // --- Lógica de API ---
     async function handleAuth(e, action) {
         e.preventDefault();
         const formData = new FormData(e.target);
         formData.append('action', action);
         
-        const res = await fetch('api.php', { method: 'POST', body: formData });
-        const data = await res.json();
-        alert(data.msg);
-        if(data.status === 'success') location.reload();
+        try {
+            const res = await fetch('api.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.msg);
+            if(data.status === 'success') location.reload();
+        } catch (error) {
+            alert("Error de conexión con el servidor");
+        }
     }
 
     async function savePrompt() {
+        const domain = document.getElementById('domainInput').value;
+        const finalPrompt = document.getElementById('finalOutput').innerText;
+
+        if(!domain || finalPrompt.includes("Completa el formulario")) {
+            alert("Completa el dominio y el contenido antes de guardar.");
+            return;
+        }
+
         const formData = new FormData();
         formData.append('action', 'save_prompt');
-        formData.append('domain', document.getElementById('domain').value);
-        formData.append('role', document.getElementById('roleInput').value);
+        formData.append('domain', domain);
+        formData.append('role', document.getElementById('roleInput').value || 'Asistente');
         formData.append('context', document.getElementById('context').value);
-        formData.append('final_prompt', document.getElementById('finalOutput').innerText);
+        formData.append('final_prompt', finalPrompt);
         formData.append('rating', document.getElementById('rating').value);
 
         const res = await fetch('api.php', { method: 'POST', body: formData });
         const data = await res.json();
-        alert(data.msg);
+        if(data.status === 'success') {
+            alert(data.msg);
+            location.reload();
+        }
+    }
+
+    async function deletePrompt(id) {
+        if(confirm("¿Eliminar este prompt de forma permanente?")) {
+            const formData = new FormData();
+            formData.append('action', 'delete_prompt');
+            formData.append('id', id);
+            const res = await fetch('api.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            location.reload();
+        }
+    }
+
+    async function deleteAllPrompts() {
+        if(confirm("⚠️ ¿Estás seguro de VACIAR toda tu librería?")) {
+            const formData = new FormData();
+            formData.append('action', 'delete_all_prompts');
+            await fetch('api.php', { method: 'POST', body: formData });
+            location.reload();
+        }
     }
 
     function logout() {
         const formData = new FormData();
         formData.append('action', 'logout');
-        fetch('api.php', { method: 'POST', body: formData }).then(() => location.reload());
+        fetch('api.php', { method: 'POST', body: formData }).then(() => location.href = 'index.php');
+    }
+
+    function copyText(text) {
+        const content = text || document.getElementById('finalOutput').innerText;
+        if (!content || content.includes("Completa el formulario")) {
+            alert("No hay nada que copiar.");
+            return;
+        }
+        navigator.clipboard.writeText(content).then(() => alert('✅ ¡Copiado!'));
     }
 </script>
 </body>
