@@ -1,4 +1,11 @@
-<?php require 'db.php'; ?>
+<?php 
+// 2. INICIAR SESIÓN (Debe ir antes de cualquier HTML para que el nombre de usuario se vea)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require 'db.php'; 
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -25,6 +32,9 @@
                     <i class="bi bi-person-circle"></i> 
                     <?php echo htmlspecialchars($_SESSION['user_email']); ?>
                 </span>
+                <a href="#myLibrary" class="text-white me-3 text-decoration-none">
+                    <i class="bi bi-collection"></i> Mi Librería
+                </a>
                 <button class="btn btn-outline-light btn-sm" onclick="logout()">Cerrar Sesión</button>
             <?php else: ?>
                 <button class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Ingresar</button>
@@ -42,14 +52,23 @@
                 <form id="promptForm">
                     <div class="mb-3">
                         <label class="form-label fw-bold"><span class="step-number">1</span>Dominio de Conocimiento</label>
-                        <select class="form-select" id="domain" onchange="updatePrompt()">
-                            <option value="">Selecciona un área...</option>
-                            <option value="Ingeniería de Software">Ingeniería de Software</option>
-                            <option value="Marketing Digital">Marketing Digital</option>
-                            <option value="Derecho y Leyes">Derecho y Leyes</option>
-                            <option value="Medicina y Salud">Medicina y Salud</option>
-                            <option value="Escritura Creativa">Escritura Creativa</option>
-                        </select>
+                        <div class="input-group">
+                            <select class="form-select" id="domainSelect" onchange="setDomain()">
+                                <option value="">Seleccionar área sugerida...</option>
+                                <option value="Ingeniería de Software">Ingeniería de Software</option>
+                                <option value="Marketing Digital">Marketing Digital</option>
+                                <option value="Derecho y Leyes">Derecho y Leyes</option>
+                                <option value="Medicina y Salud">Medicina y Salud</option>
+                                <option value="Escritura Creativa">Escritura Creativa</option>
+                                <option value="Biología Molecular">Biología Molecular</option>
+                                <option value="Astronomía">Astronomía</option>
+                                <option value="Finanzas y Economía">Finanzas y Economía</option>
+                                <option value="Arquitectura">Arquitectura</option>
+                                <option value="Psicología">Psicología</option>
+                            </select>
+                            <input type="text" class="form-control" id="domainInput" placeholder="O escribe un área nueva" oninput="updatePrompt()">
+                        </div>
+                        <div class="form-text">Si tu área no está en la lista, escríbela manualmente.</div>
                     </div>
 
                     <div class="mb-3">
@@ -143,6 +162,101 @@
             </div>
         </div>
     </div>
+
+<?php if(isset($_SESSION['user_id'])): ?>
+<hr class="my-5">
+<div class="row" id="myLibrary">
+    <div class="col-12 mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3><i class="bi bi-journal-bookmark"></i> Mi Librería de Activos</h3>
+                <p class="text-muted mb-0">Gestiona y filtra tus prompts guardados.</p>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Buscar por rol o contenido..." onkeyup="filterPrompts()">
+                <select id="domainFilter" class="form-select form-select-sm" onchange="filterPrompts()">
+                    <option value="all">Todos los dominios</option>
+                    <option value="Ingeniería de Software">Ingeniería de Software</option>
+                    <option value="Marketing Digital">Marketing Digital</option>
+                    <option value="Derecho y Leyes">Derecho y Leyes</option>
+                    <option value="Medicina y Salud">Medicina y Salud</option>
+                    <option value="Escritura Creativa">Escritura Creativa</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="promptsContainer">
+        <?php
+        $stmt = $pdo->prepare("SELECT * FROM prompts WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$_SESSION['user_id']]);
+        $mis_prompts = $stmt->fetchAll();
+
+        if ($mis_prompts):
+            foreach ($mis_prompts as $p):
+        ?>
+        <div class="col-md-4 mb-3 prompt-card" 
+             data-domain="<?php echo htmlspecialchars($p['domain']); ?>" 
+             data-content="<?php echo htmlspecialchars(strtolower($p['role'] . ' ' . $p['final_prompt'])); ?>">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary"><?php echo htmlspecialchars($p['domain']); ?></span>
+                        <span class="text-warning"><?php echo str_repeat('⭐', $p['rating']); ?></span>
+                    </div>
+                    <h6 class="card-title fw-bold">Rol: <?php echo htmlspecialchars($p['role']); ?></h6>
+                    <p class="card-text small text-truncate-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        <?php echo htmlspecialchars($p['final_prompt']); ?>
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyText('<?php echo addslashes($p['final_prompt']); ?>')">
+                            <i class="bi bi-clipboard"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php 
+            endforeach;
+        else:
+            echo '<div class="col-12"><div class="alert alert-light text-center">Aún no tienes prompts guardados.</div></div>';
+        endif;
+        ?>
+    </div>
+</div>
+
+<script>
+// Lógica de filtrado instantáneo
+function filterPrompts() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const domainFilter = document.getElementById('domainFilter').value;
+    const cards = document.querySelectorAll('.prompt-card');
+
+    cards.forEach(card => {
+        const content = card.getAttribute('data-content');
+        const domain = card.getAttribute('data-domain');
+        
+        const matchesSearch = content.includes(searchTerm);
+        const matchesDomain = (domainFilter === 'all' || domain === domainFilter);
+
+        if (matchesSearch && matchesDomain) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+    // Un toque de UX: Cambiar el alert por algo menos intrusivo si es posible, 
+    // pero por ahora mantenemos consistencia con tu código
+    alert('Prompt copiado con éxito.');
+}
+</script>
+<?php endif; ?>
+
 </div>
 
 <div class="modal fade" id="loginModal" tabindex="-1">
@@ -188,8 +302,20 @@
         updatePrompt();
     }
 
+    // Nueva función para sincronizar el Select con el Input de Dominio
+    function setDomain() {
+        const select = document.getElementById('domainSelect');
+        const input = document.getElementById('domainInput');
+        if(select.value) {
+            input.value = select.value;
+        }
+        updatePrompt();
+}
+
+    // Actualización de la función principal
     function updatePrompt() {
-        const domain = document.getElementById('domain').value;
+        // Ahora tomamos el dominio del input manual (que se llena al elegir el select)
+        const domain = document.getElementById('domainInput').value;
         const role = document.getElementById('roleInput').value;
         const context = document.getElementById('context').value;
         const format = document.getElementById('format').value;
@@ -197,9 +323,11 @@
         
         let prompt = "";
 
-        // Construcción lógica del Prompt
+        // Construcción lógica del Prompt (Mejorada para ser más natural)
         if(role) prompt += `Actúa como un **${role}** `;
-        if(domain) prompt += `experto en el área de **${domain}**. `;
+        if(domain) {
+            prompt += (role) ? `experto en el área de **${domain}**. ` : `Eres un experto en **${domain}**. `;
+        }
         if(context) prompt += `\n\n**Contexto:** ${context}`;
         
         // Estructura Viral
