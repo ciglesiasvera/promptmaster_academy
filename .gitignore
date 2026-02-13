@@ -1,5 +1,8 @@
 /vendor
 .env
-db.php
 .DS_Store
 *.log
+promptmaster.sqlite
+CURSO IA.pdf
+*.session
+query

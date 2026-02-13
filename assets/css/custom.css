@@ -1,0 +1,224 @@
+/* custom.css - Estilos personalizados para PromptMaster Academy */
+
+/* Variables de colores consistentes */
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --accent-gradient: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+}
+
+/* Estilos generales */
+.academy-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.academy-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.academy-header {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.academy-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Módulos de aprendizaje */
+.module-card {
+    height: 100%;
+    border-left: 4px solid var(--primary-color);
+}
+
+.module-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Teoría de prompts */
+.theory-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.theory-tab {
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.theory-tab.active {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Ejercicios prácticos */
+.exercise-box {
+    background: white;
+    border: 2px dashed var(--primary-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.exercise-box:hover {
+    background: #f0f8ff;
+    border-style: solid;
+}
+
+.exercise-solution {
+    background: #f8f9fa;
+    border-left: 4px solid var(--success-color);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    display: none;
+}
+
+/* Componentes interactivos */
+.interactive-btn {
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.interactive-btn:hover {
+    transform: scale(1.05);
+    color: white;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* Progress tracking */
+.progress-ring {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary-color) 0% var(--progress), #e9ecef var(--progress) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring-inner {
+    width: 46px;
+    height: 46px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .academy-header {
+        padding: 1rem;
+    }
+    
+    .theory-section {
+        padding: 1rem;
+    }
+    
+    .module-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Estilos para formularios de módulos */
+.module-form .form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.module-form .form-control, .module-form .form-select {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.module-form .form-control:focus, .module-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estilos para código y ejemplos */
+.code-block {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+.code-keyword { color: #569cd6; }
+.code-string { color: #ce9178; }
+.code-comment { color: #6a9955; }
+.code-function { color: #dcdcaa; }
+
+/* Alertas personalizadas */
+.alert-academy {
+    border: none;
+    border-radius: 10px;
+    padding: 1.25rem;
+}
+
+.alert-academy-success {
+    background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);
+    color: #0f5132;
+    border-left: 4px solid #198754;
+}
+
+.alert-academy-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+    color: #664d03;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-academy-info {
+    background: linear-gradient(135deg, #cff4fc 0%, #9eeaf9 100%);
+    color: #055160;
+    border-left: 4px solid #0dcaf0;
+}

@@ -1,7 +1,7 @@
 <?php 
 /**
- * index.php - PromptMaster v0.1.5
- * La sesión se inicia automáticamente al requerir db.php de forma segura.
+ * index.php - PromptMaster Academy v1.0
+ * Constructor de Prompts Didáctico (funcionalidad original preservada)
  */
 require 'db.php'; 
 ?>
@@ -10,9 +10,10 @@ require 'db.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromptMaster - IA Lab</title>
+    <title>PromptMaster Academy - Constructor de Prompts</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; scroll-behavior: smooth; }
         .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 12px; }
@@ -25,27 +26,7 @@ require 'db.php';
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 sticky-top shadow">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-cpu"></i> PromptMaster <span class="badge bg-primary" style="font-size: 0.6em;">v0.1.5</span></a>
-        <div class="d-flex align-items-center"> 
-            <?php if(isset($_SESSION['user_id'])): ?>
-                <span class="navbar-text text-white me-3 d-none d-sm-block">
-                    <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['user_email']); ?>
-                </span>
-                <a href="javascript:void(0)" onclick="document.getElementById('myLibrary').scrollIntoView()" class="text-white me-3 text-decoration-none small">
-                    <i class="bi bi-collection"></i> Mi Librería
-                </a>
-                <button class="btn btn-sm btn-outline-danger me-2" onclick="deleteAllPrompts()">
-                    <i class="bi bi-trash3"></i>
-                </button>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">Salir</button>
-            <?php else: ?>
-                <button class="btn btn-primary btn-sm me-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#loginModal">Ingresar / Registrarse</button>
-            <?php endif; ?>
-        </div>
-    </div>
-</nav>
+<?php include 'navigation.php'; ?>
 
 <div class="container">
     <div class="row">
