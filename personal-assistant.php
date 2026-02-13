@@ -520,11 +520,11 @@ Tono: Conciso, basado en datos, orientado a la toma de decisiones.
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h5>PromptMaster Academy</h5>
+                <h5>SkillNest-AI-Copilot - PromptMaster Academy</h5>
                 <p class="small">Transforma tu productividad con asistentes de IA inteligentes.</p>
             </div>
             <div class="col-md-6 text-end">
-                <p class="small mb-0">© 2025 IA Lab – Smart Work</p>
+                <p class="small mb-0">© 2026 IA Lab – Smart Work</p>
                 <p class="small">Módulo: IA como Asistente Personal</p>
             </div>
         </div>

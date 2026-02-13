@@ -188,11 +188,11 @@ require 'db.php';
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h5>PromptMaster Academy</h5>
+                <h5>SkillNest-AI-Copilot - PromptMaster Academy</h5>
                 <p class="small">Automatiza tu flujo de trabajo sin programación.</p>
             </div>
             <div class="col-md-6 text-end">
-                <p class="small mb-0">© 2025 IA Lab – Smart Work</p>
+                <p class="small mb-0">© 2026 IA Lab – Smart Work</p>
                 <p class="small">Módulo: Automatización Sin Código</p>
             </div>
         </div>

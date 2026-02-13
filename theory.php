@@ -507,11 +507,11 @@ require 'db.php';
     <div class="container">
         <div class="row">
             <div class="col-md-6">
-                <h5>PromptMaster Academy</h5>
+                <h5>SkillNest-AI-Copilot - PromptMaster Academy</h5>
                 <p class="small">Plataforma educativa para dominar la ingeniería de prompts y aplicaciones de IA.</p>
             </div>
             <div class="col-md-6 text-end">
-                <p class="small mb-0">© 2025 IA Lab – Smart Work. Todos los derechos reservados.</p>
+                <p class="small mb-0">© 2026 IA Lab – Smart Work. Todos los derechos reservados.</p>
                 <p class="small">Desarrollado como proyecto final del curso.</p>
             </div>
         </div>
