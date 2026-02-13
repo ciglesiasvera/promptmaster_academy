@@ -15,8 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 sticky-top shadow">
     <div class="container">
         <a class="navbar-brand fw-bold" href="index.php">
-            <i class="bi bi-cpu"></i> PromptMaster Academy 
-            <span class="badge bg-primary" style="font-size: 0.6em;">v2.0</span>
+            <i class="bi bi-cpu"></i> SkillNest-AI-Copilot 
+            <span class="badge bg-primary" style="font-size: 0.6em;">v1.0</span>
         </a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
