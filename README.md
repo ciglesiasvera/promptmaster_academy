@@ -1,7 +1,10 @@
 # SkillNest-AI-Copilot - Plataforma Educativa de IA (v1.0)
 
 ## 🌐 Acceso a Producción
-La plataforma está desplegada y operativa en: **[https://promptwise.skylabs.cl](https://promptwise.skylabs.cl)**
+La plataforma para cración de prompts está desplegada y operativa en: **[https://promptwise.skylabs.cl](https://promptwise.skylabs.cl)**
+
+La plataforma de la entrega final como parte del curso está desplegada en:
+**[https://skillnest-ia-copilot.skylabs.cl](https://promptwise.skylabs.cl)** 
 
 ## 🚀 Resumen Ejecutivo
 **PromptMaster Academy** es un ecosistema educativo completo diseñado para dominar la ingeniería de prompts y aplicaciones prácticas de IA. Esta plataforma integra los conocimientos del curso **IA Lab – Smart Work** de SkillNest en una experiencia de aprendizaje interactiva y práctica.
